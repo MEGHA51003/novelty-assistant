@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Project Assistant</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f23;
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+        }
+        
+        /* Left Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #1a1a2e;
+            border-right: 1px solid #2d2d44;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #2d2d44;
+        }
+        
+        .sidebar-header h2 {
+            font-size: 16px;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+        
+        .new-project-btn {
+            width: 100%;
+            padding: 12px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .new-project-btn:hover { background: #5558e3; }
+        
+        .project-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .project-item {
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: background 0.2s;
+        }
+        
+        .project-item:hover { background: #252542; }
+        
+        .project-item.active {
+            background: #6366f1;
+        }
+        
+        .project-item h3 {
+            font-size: 14px;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        
+        .project-item p {
+            font-size: 12px;
+            color: #888;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Main Area */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        /* Project Brief Panel */
+        .brief-panel {
+            background: #1a1a2e;
+            padding: 15px 20px;
+            border-bottom: 1px solid #2d2d44;
+        }
+        
+        .brief-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .brief-header h3 {
+            font-size: 14px;
+            color: #fff;
+        }
+        
+        .brief-toggle {
+            color: #888;
+            font-size: 12px;
+        }
+        
+        .brief-content {
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .brief-content.show { display: block; }
+        
+        .brief-field {
+            margin-bottom: 12px;
+        }
+        
+        .brief-field label {
+            display: block;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        
+        .brief-field input,
+        .brief-field textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #2d2d44;
+            border-radius: 6px;
+            background: #0f0f23;
+            color: #e0e0e0;
+            font-size: 13px;
+        }
+        
+        .brief-field textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+        
+        .brief-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .brief-actions button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .btn-save { background: #10b981; color: white; }
+        .btn-cancel { background: #3d3d5c; color: #e0e0e0; }
+        
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .chat-empty {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            text-align: center;
+        }
+        
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+        
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.user { flex-direction: row-reverse; }
+        
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .message.user .message-avatar {
+            background: #6366f1;
+            margin-left: 12px;
+        }
+        
+        .message.assistant .message-avatar {
+            background: #10b981;
+            margin-right: 12px;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        
+        .message.user .message-content {
+            background: #6366f1;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message.assistant .message-content {
+            background: #1a1a2e;
+            border-bottom-left-radius: 4px;
+            white-space: pre-wrap;
+        }
+        
+        .message-image {
+    max-width: 300px;
+    border-radius: 12px;
+    margin-top: 10px;
+    background: #000;
+    padding: 5px;
+}
+        .message-image img {
+    width: 100%;
+    border-radius: 8px;
+    display: block;
+}
+        
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 16px;
+            background: #1a1a2e;
+            border-radius: 16px;
+            width: fit-content;
+        }
+        
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #888;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite;
+        }
+        
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); }
+        }
+        
+        /* Input Area */
+        .input-area {
+            display: flex;
+            gap: 12px;
+            padding-top: 15px;
+            border-top: 1px solid #2d2d44;
+            align-items: center;
+        }
+        
+        .input-area input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 1px solid #2d2d44;
+            border-radius: 24px;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .input-area input:focus { border-color: #6366f1; }
+        
+        .input-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-plus {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #2d2d44;
+            color: #e0e0e0;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-plus:hover { background: #3d3d5c; }
+        
+        .btn-send {
+            padding: 14px 24px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-send:hover { background: #5558e3; }
+        .btn-send:disabled { background: #3d3d5c; cursor: not-allowed; }
+        
+        /* Dropdown Menu */
+        .dropdown {
+            position: relative;
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            bottom: 50px;
+            left: 0;
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 180px;
+            display: none;
+            z-index: 100;
+        }
+        
+        .dropdown-menu.show { display: block; }
+        
+        .dropdown-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .dropdown-item:hover { background: #252542; }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-overlay.show { display: flex; }
+        
+        .modal {
+            background: #1a1a2e;
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal h3 {
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        
+        .modal-field {
+            margin-bottom: 15px;
+        }
+        
+        .modal-field label {
+            display: block;
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 6px;
+        }
+        
+        .modal-field input,
+        .modal-field textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #2d2d44;
+            border-radius: 8px;
+            background: #0f0f23;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+        
+        .modal-field textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        
+        .modal-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-primary { background: #6366f1; color: white; }
+        .btn-secondary { background: #3d3d5c; color: #e0e0e0; }
+        
+        /* Hidden */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>📁 Projects</h2>
+            <button class="new-project-btn" onclick="openNewProjectModal()">+ New Project</button>
+        </div>
+        <div class="project-list" id="projectList">
+            <!-- Projects will be loaded here -->
+        </div>
+    </div>
+    
+    <!-- Main Area -->
+    <div class="main">
+        <!-- Brief Panel -->
+        <div class="brief-panel" id="briefPanel">
+            <div class="brief-header" onclick="toggleBrief()">
+                <h3>📋 Project Brief</h3>
+                <span class="brief-toggle" id="briefToggle">▼ Show</span>
+            </div>
+            <div class="brief-content" id="briefContent">
+                <div class="brief-field">
+                    <label>Title</label>
+                    <input type="text" id="briefTitle" placeholder="Project title">
+                </div>
+                <div class="brief-field">
+                    <label>Description</label>
+                    <textarea id="briefDescription" placeholder="Project description"></textarea>
+                </div>
+                <div class="brief-field">
+                    <label>Goals</label>
+                    <textarea id="briefGoals" placeholder="Project goals"></textarea>
+                </div>
+                <div class="brief-field">
+                    <label>Reference Links (comma separated)</label>
+                    <input type="text" id="briefLinks" placeholder="https://...">
+                </div>
+                <div class="brief-field">
+                    <label>Tags (comma separated)</label>
+                    <input type="text" id="briefTags" placeholder="web, mobile, api">
+                </div>
+                <div class="brief-actions">
+                    <button class="btn-save" onclick="saveBrief()">Save Brief</button>
+                    <button class="btn-cancel" onclick="cancelBrief()">Cancel</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Area -->
+        <div class="chat-area">
+            <div class="chat-empty" id="chatEmpty">
+                <div>
+                    <p style="font-size: 16px; margin-bottom: 10px;">Select or create a project to start chatting</p>
+                    <p style="font-size: 12px; color: #666;">AI responses powered by Ollama</p>
+                </div>
+            </div>
+            
+            <div class="messages hidden" id="messages"></div>
+            
+            <div class="input-area hidden" id="inputArea">
+                <div class="dropdown">
+                    <button class="btn-plus" onclick="toggleDropdown()">+</button>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div class="dropdown-item" onclick="openUploadModal()">
+                            <span>📎</span> Upload File
+                        </div>
+                        <div class="dropdown-item" onclick="openGenerateModal()">
+                            <span>🎨</span> Generate Image
+                        </div>
+                    </div>
+                </div>
+                <input type="text" id="messageInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+                <button class="btn-send" onclick="sendMessage()" id="sendBtn">Send</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- New Project Modal -->
+    <div class="modal-overlay" id="projectModal">
+        <div class="modal">
+            <h3>Create New Project</h3>
+            <div class="modal-field">
+                <label>Title *</label>
+                <input type="text" id="newProjectTitle" placeholder="Project name">
+            </div>
+            <div class="modal-field">
+                <label>Description</label>
+                <textarea id="newProjectDesc" placeholder="What is this project about?"></textarea>
+            </div>
+            <div class="modal-field">
+                <label>Goals</label>
+                <textarea id="newProjectGoals" placeholder="What do you want to achieve?"></textarea>
+            </div>
+            <div class="modal-field">
+                <label>Reference Links</label>
+                <input type="text" id="newProjectLinks" placeholder="https://...">
+            </div>
+            <div class="modal-field">
+                <label>Tags</label>
+                <input type="text" id="newProjectTags" placeholder="web, app, design">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeProjectModal()">Cancel</button>
+                <button class="btn-primary" onclick="createProject()">Create</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Image Generation Modal -->
+    <div class="modal-overlay" id="generateModal">
+        <div class="modal">
+            <h3>Generate Image</h3>
+            <div class="modal-field">
+                <label>Prompt</label>
+                <textarea id="imagePrompt" placeholder="Describe the image you want to generate..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeGenerateModal()">Cancel</button>
+                <button class="btn-primary" onclick="generateImage()">Generate</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- File Upload Modal -->
+    <div class="modal-overlay" id="uploadModal">
+        <div class="modal">
+            <h3>Upload File for Analysis</h3>
+            <div class="modal-field">
+                <label>Select Image</label>
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeUploadModal()">Cancel</button>
+                <button class="btn-primary" onclick="uploadFile()">Upload</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        let currentProjectId = null;
+        let currentConversationId = null;
+        let baseUrl = 'http://localhost:8000';
+        
+        // Load projects on start
+        loadProjects();
+        
+        async function loadProjects() {
+            try {
+                const response = await fetch(`${baseUrl}/api/projects`);
+                const projects = await response.json();
+                
+                const list = document.getElementById('projectList');
+                list.innerHTML = '';
+                
+                projects.forEach(p => {
+                    const item = document.createElement('div');
+                    item.className = 'project-item';
+                    item.onclick = () => selectProject(p);
+                    item.innerHTML = `
+                        <h3>${escapeHtml(p.title)}</h3>
+                        <p>${p.description || 'No description'}</p>
+                    `;
+                    list.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Error loading projects:', error);
+            }
+        }
+        
+        async function selectProject(project) {
+            currentProjectId = project.id;
+            
+            // Update UI
+            document.querySelectorAll('.project-item').forEach(item => item.classList.remove('active'));
+            event.target.closest('.project-item').classList.add('active');
+            
+            // Load brief
+            document.getElementById('briefTitle').value = project.title || '';
+            document.getElementById('briefDescription').value = project.description || '';
+            document.getElementById('briefGoals').value = project.goals || '';
+            document.getElementById('briefLinks').value = (project.reference_links || []).join(', ');
+            document.getElementById('briefTags').value = (project.tags || []).join(', ');
+            
+            // Show chat
+            document.getElementById('chatEmpty').classList.add('hidden');
+            document.getElementById('messages').classList.remove('hidden');
+            document.getElementById('inputArea').classList.remove('hidden');
+            
+            // Load or create conversation
+            await loadConversation();
+        }
+        
+        async function loadConversation() {
+            try {
+                const response = await fetch(`${baseUrl}/api/projects/${currentProjectId}/conversations`);
+                const conversations = await response.json();
+                
+                if (conversations.length > 0) {
+                    currentConversationId = conversations[0].id;
+                    loadMessages();
+                } else {
+                    await createConversation();
+                }
+            } catch (error) {
+                console.error('Error loading conversation:', error);
+                await createConversation();
+            }
+        }
+        
+        async function createConversation() {
+            try {
+                const response = await fetch(`${baseUrl}/api/projects/${currentProjectId}/conversations`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title: 'Chat' })
+                });
+                const conv = await response.json();
+                currentConversationId = conv.id;
+                document.getElementById('messages').innerHTML = '';
+            } catch (error) {
+                console.error('Error creating conversation:', error);
+            }
+        }
+        
+        async function loadMessages() {
+            if (!currentConversationId) return;
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/chat/${currentConversationId}/history`);
+                const messages = await response.json();
+                
+                const messagesDiv = document.getElementById('messages');
+                messagesDiv.innerHTML = '';
+                
+                messages.forEach(msg => {
+                    addMessageToUI(msg.role, msg.content, msg.metadata);
+                });
+                
+                scrollToBottom();
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message || !currentConversationId) return;
+            
+            input.value = '';
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            
+            addMessageToUI('user', message);
+            
+            // Show typing
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.innerHTML = `
+                <div class="message-avatar">AI</div>
+                <div class="typing-indicator"><span></span><span></span><span></span></div>
+            `;
+            document.getElementById('messages').appendChild(typingDiv);
+            scrollToBottom();
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/chat/${currentConversationId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                
+                const data = await response.json();
+                typingDiv.remove();
+                
+                if (data.assistant_message) {
+                    addMessageToUI('assistant', data.assistant_message.content);
+                }
+            } catch (error) {
+                typingDiv.remove();
+                addMessageToUI('assistant', 'Error: Could not connect to server');
+            }
+            
+            sendBtn.disabled = false;
+            input.focus();
+        }
+        
+        function addMessageToUI(role, content, metadata = {}) {
+    const messagesDiv = document.getElementById('messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${role}`;
+    
+    const avatar = role === 'user' ? 'U' : 'AI';
+    let imageHtml = '';
+    
+    if (metadata && metadata.image_url) {
+        imageHtml = `<div class="message-image">
+            <img src="${metadata.image_url}" 
+                 alt="Generated Image" 
+                 crossorigin="anonymous"
+                 onerror="this.parentElement.innerHTML='<span style=\'color:#888\'>Image failed to load</span>'"
+            >
+        </div>`;
+    }
+    
+    messageDiv.innerHTML = `
+        <div class="message-avatar">${avatar}</div>
+        <div class="message-content">${escapeHtml(content)}${imageHtml}</div>
+    `;
+    
+    messagesDiv.appendChild(messageDiv);
+    scrollToBottom();
+}
+        
+        function scrollToBottom() {
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Project functions
+        function openNewProjectModal() {
+            document.getElementById('projectModal').classList.add('show');
+        }
+        
+        function closeProjectModal() {
+            document.getElementById('projectModal').classList.remove('show');
+        }
+        
+        async function createProject() {
+            const title = document.getElementById('newProjectTitle').value.trim();
+            if (!title) {
+                alert('Please enter a project title');
+                return;
+            }
+            
+            const data = {
+                title,
+                description: document.getElementById('newProjectDesc').value,
+                goals: document.getElementById('newProjectGoals').value,
+                reference_links: document.getElementById('newProjectLinks').value.split(',').map(s => s.trim()).filter(s => s),
+                tags: document.getElementById('newProjectTags').value.split(',').map(s => s.trim()).filter(s => s)
+            };
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/projects`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    closeProjectModal();
+                    loadProjects();
+                }
+            } catch (error) {
+                console.error('Error creating project:', error);
+            }
+        }
+        
+        // Brief functions
+        function toggleBrief() {
+            const content = document.getElementById('briefContent');
+            const toggle = document.getElementById('briefToggle');
+            content.classList.toggle('show');
+            toggle.textContent = content.classList.contains('show') ? '▲ Hide' : '▼ Show';
+        }
+        
+        async function saveBrief() {
+            if (!currentProjectId) return;
+            
+            const data = {
+                title: document.getElementById('briefTitle').value,
+                description: document.getElementById('briefDescription').value,
+                goals: document.getElementById('briefGoals').value,
+                reference_links: document.getElementById('briefLinks').value.split(',').map(s => s.trim()).filter(s => s),
+                tags: document.getElementById('briefTags').value.split(',').map(s => s.trim()).filter(s => s)
+            };
+            
+            try {
+                await fetch(`${baseUrl}/api/projects/${currentProjectId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                loadProjects();
+            } catch (error) {
+                console.error('Error saving brief:', error);
+            }
+        }
+        
+        function cancelBrief() {
+            if (currentProjectId) {
+                selectProject({ id: currentProjectId, title: document.getElementById('briefTitle').value, description: document.getElementById('briefDescription').value });
+            }
+        }
+        
+        // Dropdown
+        function toggleDropdown() {
+            document.getElementById('dropdownMenu').classList.toggle('show');
+        }
+        
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown')) {
+                document.getElementById('dropdownMenu').classList.remove('show');
+            }
+        });
+        
+        // Image Generation
+        function openGenerateModal() {
+            document.getElementById('dropdownMenu').classList.remove('show');
+            document.getElementById('generateModal').classList.add('show');
+        }
+        
+        function closeGenerateModal() {
+            document.getElementById('generateModal').classList.remove('show');
+        }
+        
+       async function generateImage() {
+    const prompt = document.getElementById('imagePrompt').value.trim();
+    if (!prompt || !currentProjectId) return;
+    
+    try {
+        const response = await fetch(`${baseUrl}/api/projects/${currentProjectId}/images/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+        });
+        
+        const result = await response.json();
+        closeGenerateModal();
+        
+        // Clear the prompt input
+        document.getElementById('imagePrompt').value = '';
+        
+        if (result.image_url) {
+            // Add message with image - pass image_url in metadata
+            addMessageToUI('assistant', `🎨 Generated image for: "${prompt}"`, { image_url: result.image_url });
+        } else {
+            addMessageToUI('assistant', 'Failed to generate image. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error generating image:', error);
+        addMessageToUI('assistant', 'Error generating image. Please try again.');
+    }
+}
+        
+        // File Upload
+        function openUploadModal() {
+            document.getElementById('dropdownMenu').classList.remove('show');
+            document.getElementById('uploadModal').classList.add('show');
+        }
+        
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('show');
+        }
+        
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file || !currentProjectId) {
+                alert('Please select a file');
+                return;
+            }
+            
+            // For demo, we'll just display the image in chat
+            // In production, you'd upload to a server/storage
+            const imageUrl = URL.createObjectURL(file);
+            closeUploadModal();
+            
+            addMessageToUI('assistant', `📎 File uploaded for analysis:`, { image_url: imageUrl });
+            
+            // Also save to database
+            try {
+                await fetch(`${baseUrl}/api/projects/${currentProjectId}/images/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        prompt: 'User uploaded file',
+                        image_url: imageUrl,
+                        file_type: 'upload'
+                    })
+                });
+            } catch (error) {
+                console.error('Error saving file:', error);
+            }
+            
+            fileInput.value = '';
+        }
+    </script>
+</body>
+</html>
