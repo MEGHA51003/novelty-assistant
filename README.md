@@ -46,7 +46,7 @@ An AI-powered project assistant where users can chat with AI about their project
 **API Endpoints**
 
 **Projects**
-Method           Endpoint           Description
+Method        -   Endpoint           Description
 GET	         /api/projects        List all projects
 POST         /api/projects	      Create new project
 GET	       /api/projects/{id}	   Get project details
