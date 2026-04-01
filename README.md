@@ -9,13 +9,16 @@ An AI-powered project assistant where users can chat with AI about their project
 - Image Analysis - AI can analyze images using Gemini vision API
 - Memory System - Project-scoped AI memory that persists across conversations
 - Background Agent - Automatically organizes project knowledge into structured memory with status tracking
+
 **Tech Stack**
 - Backend: Python 3.11+ with FastAPI
 - AI Chat: Ollama (Llama 3.2) - free local AI model
 - AI Vision: Google Gemini API
 - Image Generation: Placeholder service (can integrate Replicate/OpenAI for production)
 - Database: Supabase (PostgreSQL)
+
 **Schema Design Decisions**
+
 **Why This Schema?**
 1. Project-Centric Design - Everything revolves around projects. Users can have multiple projects, each with its own context, conversations, and memory.
 2. Separate Conversation Model - Allows users to have multiple chat threads per project, keeping discussions organized.
@@ -39,7 +42,9 @@ An AI-powered project assistant where users can chat with AI about their project
    - Input/output data for debugging
    - Timestamps for monitoring
    - Project-scoped execution history
-   **API Endpoints**
+   
+**API Endpoints**
+
 **Projects**
 Method           Endpoint           Description
 GET	         /api/projects        List all projects
@@ -86,6 +91,7 @@ GET	              /api/agents/{id}	    Get agent execution status
 GET         	/api/projects/{id}/agents	List project agent executions
 
 **Agent System**
+
 **Memory Organization Agent**
 The background agent processes a project's data and organizes it into structured memory:
 1. Triggered via API - POST to /api/projects/{id}/agents/organize
