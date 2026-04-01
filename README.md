@@ -111,7 +111,7 @@ The background agent processes a project's data and organizes it into structured
    - Important facts and constraints
    - Technical concepts and definitions
 5. Saves to memory - Creates memory entries in database
-6. Updates status - Marks as "completed" or "failed"
+6. Updates status - Marks as "completed" or "failed" 
 Agent Flow
 [API Trigger] → [pending] → [running] → [completed/failed]
                                       ↓
