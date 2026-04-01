@@ -53,13 +53,13 @@ An AI-powered project assistant where users can chat with AI about their project
 | GET | `/api/projects/{id}` | Get project details |
 | PUT | `/api/projects/{id}` | Update project |
 | DELETE | `/api/projects/{id}` | Delete project |
-Briefs:
+
 ### Briefs
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/projects/{id}/brief` | Get project brief |
 | PUT | `/api/projects/{id}/brief` | Update project brief |
-Conversations:
+
 ### Conversations
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -67,13 +67,13 @@ Conversations:
 | POST | `/api/projects/{id}/conversations` | Create new conversation |
 | GET | `/api/conversations/{id}` | Get conversation with messages |
 | DELETE | `/api/conversations/{id}` | Delete conversation |
-Chat:
+
 ### Chat
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/chat/{conversation_id}` | Send message and get AI response |
 | GET | `/api/chat/{conversation_id}/history` | Get chat history |
-Images:
+
 ### Images
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -81,7 +81,7 @@ Images:
 | GET | `/api/projects/{id}/images` | List project images |
 | POST | `/api/images/{id}/analyze` | Analyze image with Gemini |
 | DELETE | `/api/images/{id}` | Delete image |
-Memory:
+
 ### Memory
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -89,13 +89,14 @@ Memory:
 | POST | `/api/projects/{id}/memory` | Add memory entry |
 | PUT | `/api/memory/{id}` | Update memory entry |
 | DELETE | `/api/memory/{id}` | Delete memory entry |
-Agent:
+
 ### Agent
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/projects/{id}/agents/organize` | Trigger memory organization agent |
 | GET | `/api/agents/{id}` | Get agent execution status |
 | GET | `/api/projects/{id}/agents` | List project agent executions |
+
 **Agent System**
 
 **Memory Organization Agent**
