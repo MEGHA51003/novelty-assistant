@@ -1,6 +1,7 @@
 **AI Project Assistant**
 
 An AI-powered project assistant where users can chat with AI about their projects, generate and analyze images, and organize project knowledge using AI agents.
+
 **Features**
 - Chat with AI - Get AI assistance on your projects with full conversation history
 - Project Management - Create and manage projects with briefs (title, description, goals, reference links, tags)
