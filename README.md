@@ -97,9 +97,8 @@ An AI-powered project assistant where users can chat with AI about their project
 | GET | `/api/agents/{id}` | Get agent execution status |
 | GET | `/api/projects/{id}/agents` | List project agent executions |
 
-**Agent System**
-
-**Memory Organization Agent**
+Agent System
+Memory Organization Agent
 The background agent processes a project's data and organizes it into structured memory:
 1. Triggered via API - POST to /api/projects/{id}/agents/organize
 2. Creates execution record - Status starts as "pending"
@@ -111,11 +110,11 @@ The background agent processes a project's data and organizes it into structured
    - Important facts and constraints
    - Technical concepts and definitions
 5. Saves to memory - Creates memory entries in database
-6. Updates status - Marks as "completed" or "failed" 
+6. Updates status - Marks as "completed" or "failed"
 Agent Flow
 [API Trigger] → [pending] → [running] → [completed/failed]
                                       ↓
-                           [Creates memory entries]
+                              [Creates memory entries]
 Tool Loop
 The AI has access to tools during conversations:
 1. read_memory - Read project memory entries
@@ -163,10 +162,10 @@ novelty-assistant/
 │   ├── routers/             # API routes (projects, chat, images, etc.)
 │   ├── services/            # External API services (ollama, gemini)
 │   └── agents/              # Background agents
-├── migrations/             # Database migrations
+├── migrations/              # Database migrations
 ├── tests/                   # Unit tests
-├── chat.html               # Frontend UI
-├── .env                    # Environment variables
+├── chat.html                # Frontend UI
+├── .env                     # Environment variables
 └── README.md
 Known Limitations
 1. Tool Loop with Ollama - The free Ollama model may not always follow the tool call format perfectly. Claude API would perform better but requires paid subscription.
